@@ -1,4 +1,4 @@
-import { apiConfigured, apiRequest } from "@/services/api-client";
+import { apiRequest } from "@/services/api-client";
 import { authorizedRequest } from "@/services/backend-auth";
 import type { Account, Role } from "@/types/auth";
 import type { ServiceCategory } from "@/types/management";
@@ -66,7 +66,6 @@ export function resetLiveRequests() {
 }
 
 export async function refreshServiceCatalogue(role: Role | null, force = false) {
-  if (!apiConfigured()) return;
   const scope = role === "manager" ? "manager" : "public";
   if (scope !== catalogueScope) {
     catalogueRevision++;
@@ -108,7 +107,7 @@ export async function saveBackendService(input: Omit<ServiceCategory, "id">, id?
 }
 
 export async function refreshLiveRequests(account: Pick<Account, "id" | "role">, force = false) {
-  if (!apiConfigured() || !["guest", "staff", "manager"].includes(account.role)) return;
+  if (!["guest", "staff", "manager"].includes(account.role)) return;
   const key = account.role + ":" + account.id;
   if (requestIdentity !== key) {
     requestRevision++;
