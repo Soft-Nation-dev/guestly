@@ -8,31 +8,26 @@ import { Icon } from "@/components/ui/icon";
 import { RoomCard } from "@/components/public/room-card";
 import { StaySearch } from "@/components/public/stay-search";
 import { useManagement, useRoomCatalogue } from "@/hooks/use-management";
-import { useBookingStore } from "@/hooks/use-bookings";
 import { bookingQuery, readStay } from "@/lib/booking-query";
-import type { Booking } from "@/types/booking";
 import { formatMoney, localDate, stayNights } from "@/lib/format";
-import { availableInventory, findRooms, getRoom } from "@/services/rooms";
-import { apiConfigured } from "@/services/api-client";
+import { getRoom } from "@/services/rooms";
 import { fetchRoomAvailability, refreshRooms, type LiveRoom } from "@/services/backend-rooms";
 import type { Room, StaySearch as Search } from "@/types/hotel";
 
 const categories = ["All", "Standard", "Deluxe", "Executive"] as const;
 
-function RoomDetail({ room, stay, back, bookings, liveAvailability, checking, availabilityError }: {
+function RoomDetail({ room, stay, back, liveAvailability, checking, availabilityError }: {
   room: Room;
   stay?: Search;
   back: string;
-  bookings: Booking[];
   liveAvailability: LiveRoom[] | null;
   checking: boolean;
   availabilityError: string;
 }) {
-  const live = apiConfigured();
   const nights = stay ? stayNights(stay.checkIn, stay.checkOut) : 0;
   const quantity = liveAvailability?.find(item => item.id === room.id)?.availableInventory ?? 0;
   const available = stay && stay.checkIn >= localDate() && stay.guests <= room.capacity &&
-    (live ? quantity > 0 : availableInventory(room, stay, bookings) > 0);
+    quantity > 0;
 
   return <div className="detail-page">
     <Link className="text-link" href={back}><Icon name="back" /> All rooms</Link>
@@ -49,9 +44,9 @@ function RoomDetail({ room, stay, back, bookings, liveAvailability, checking, av
         <span className="eyebrow">Plan your stay</span><h2><span className="price">{formatMoney(room.nightlyRate)}</span> <small>/ night</small></h2>
         <StaySearch key={JSON.stringify(stay)} initial={stay} roomId={room.id} />
         {stay && <div className="availability-result" role="status">
-          {live && checking ? <p>Checking live room availability…</p> :
-          live && availabilityError ? <p className="form-error">{availabilityError}</p> :
-          available ? <><span className="availability-label"><Icon name="check" /> Available for your dates{live ? " · " + quantity + " remaining" : ""}</span>
+          {checking ? <p>Checking live room availability…</p> :
+          availabilityError ? <p className="form-error">{availabilityError}</p> :
+          available ? <><span className="availability-label"><Icon name="check" /> Available for your dates{" · " + quantity + " remaining"}</span>
             <div className="estimate"><span>{nights} {nights === 1 ? "night" : "nights"}</span><strong>{formatMoney(room.nightlyRate * nights)}</strong></div>
             <Link className="button button-primary" href={"/checkout?" + bookingQuery({ ...stay, roomId: room.id })}>Reserve room <Icon name="arrow" /></Link></> :
             <p className="form-error">This room does not accommodate your selected stay. Try other dates or fewer guests.</p>}
@@ -63,14 +58,12 @@ function RoomDetail({ room, stay, back, bookings, liveAvailability, checking, av
 
 export function RoomBrowser() {
   const params = useSearchParams();
-  const { bookings } = useBookingStore();
   const { rooms } = useManagement();
   const catalogue = useRoomCatalogue();
   const [category, setCategory] = useState<(typeof categories)[number]>("All");
   const [sort, setSort] = useState("recommended");
   const [availability, setAvailability] = useState<{ key: string; items: LiveRoom[] } | null>(null);
   const [availabilityFailure, setAvailabilityFailure] = useState<{ key: string; message: string } | null>(null);
-  const live = apiConfigured();
   const checkIn = params.get("checkIn") ?? "";
   const checkOut = params.get("checkOut") ?? "";
   const nights = stayNights(checkIn, checkOut);
@@ -87,7 +80,7 @@ export function RoomBrowser() {
   const room = roomId ? getRoom(roomId, rooms) : undefined;
 
   useEffect(() => {
-    if (!live || !searchKey) return;
+    if (!searchKey) return;
     const [from, to, guestCount] = searchKey.split("|");
     const controller = new AbortController();
     void fetchRoomAvailability({ checkIn: from, checkOut: to, guests: Number(guestCount) }, controller.signal)
@@ -96,21 +89,21 @@ export function RoomBrowser() {
         if (!controller.signal.aborted) setAvailabilityFailure({ key: searchKey, message: error instanceof Error ? error.message : "Unable to check availability." });
       });
     return () => controller.abort();
-  }, [live, searchKey]);
+  }, [searchKey]);
 
-  if (live && !catalogue.loaded && !catalogue.error) {
+  if (!catalogue.loaded && !catalogue.error) {
     return <div className="panel empty-state"><Icon name="bed" /><h1>Rooms &amp; suites</h1><p role="status">Loading hotel rooms…</p></div>;
   }
 
-  if (live && catalogue.error) {
+  if (catalogue.error) {
     return <div className="panel empty-state"><Icon name="bed" /><h1>Rooms unavailable</h1><p role="alert">{catalogue.error}</p><button className="button button-soft" onClick={() => void refreshRooms(true).catch(() => {})}>Try again</button></div>;
   }
 
-  if (room) return <RoomDetail room={room} stay={stay} back={back} bookings={bookings}
-    liveAvailability={currentAvailability} checking={live && Boolean(stay) && !currentAvailability && !availabilityError}
+  if (room) return <RoomDetail room={room} stay={stay} back={back}
+    liveAvailability={currentAvailability} checking={Boolean(stay) && !currentAvailability && !availabilityError}
     availabilityError={availabilityError} />;
 
-  const source = live && stay ? (currentAvailability ?? []) : stay ? findRooms(stay, bookings, rooms) : rooms;
+  const source = stay ? (currentAvailability ?? []) : rooms;
   const matches = source.filter(item => category === "All" || item.category === category);
   const results = [...matches].sort((a, b) => sort === "price-low" ? a.nightlyRate - b.nightlyRate : sort === "price-high" ? b.nightlyRate - a.nightlyRate : 0);
   return <>
@@ -118,8 +111,8 @@ export function RoomBrowser() {
     {roomId && <p className="form-error" role="alert">We could not find that room. Explore our available rooms below.</p>}
     <section className="panel search-panel" aria-label="Find rooms"><StaySearch key={queryString} initial={stay} /></section>
     {!!(checkIn || checkOut) && !stay && <p className="form-error" role="alert">Enter valid dates and guest count to check availability.</p>}
-    {live && stay && !currentAvailability && !availabilityError && <p role="status">Checking live availability…</p>}
-    {live && availabilityError && <p className="form-error" role="alert">{availabilityError}</p>}
+    {stay && !currentAvailability && !availabilityError && <p role="status">Checking live availability…</p>}
+    {availabilityError && <p className="form-error" role="alert">{availabilityError}</p>}
     <div className="results-toolbar">
       <div className="filter-tabs" aria-label="Room categories">{categories.map(item => <button type="button" key={item} aria-pressed={category === item} className={category === item ? "filter-active" : ""} onClick={() => setCategory(item)}>{item}</button>)}</div>
       <label className="sort-field"><span>Sort by</span><select value={sort} onChange={event => setSort(event.target.value)}><option value="recommended">Recommended</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option></select></label>
