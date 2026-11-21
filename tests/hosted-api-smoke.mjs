@@ -63,7 +63,7 @@ async function run() {
   await json("/api/v1/hotels/current", 200, data => {
     assert.equal(typeof data?.name, "string", "Hotel profile name");
   });
-  await json("/api/v1/servicerequests/catalogue", 200, data => {
+  const categories = await json("/api/v1/servicerequests/catalogue", 200, data => {
     assert.ok(Array.isArray(data), "Service catalogue must be an array");
   });
 
@@ -121,7 +121,9 @@ async function run() {
   assert.equal(badLogin.status, 400, "Invalid login input must be rejected");
   process.stdout.write("PASS /api/v1/auth/login (input validation)\n");
 
-  process.stdout.write("Hosted API read-only checks passed. " + rooms.length + " live room types found.\n");
+  assert.ok(rooms.length > 0, "Live room catalogue is empty; initialize hotel room inventory before switching production.");
+  assert.ok(categories.length > 0, "Live service catalogue is empty.");
+  process.stdout.write("Hosted API checks passed. " + rooms.length + " live room types found.\n");
   process.stdout.write("Account workflows, payment, approvals and guest/staff operations still require authorized end-to-end testing.\n");
 }
 
