@@ -1,6 +1,6 @@
 import { apiRequest, apiConfigured } from '@/services/api-client';
 import { authorizedRequest } from '@/services/backend-auth';
-import { hotel as hotelDefaults } from '@/data/mock';
+import { hotel as hotelDefaults } from '@/data/hotel';
 import type { Room, StaySearch } from '@/types/hotel';
 
 export type LiveRoom = Room & { availableInventory: number };

@@ -10,7 +10,7 @@ import {
   submitBackendCheckIn, reviewBackendCheckIn, downloadBackendIdentity,
   refreshBackendCheckIns, loadMoreCheckIns,
 } from "@/services/backend-checkins";
-import { documentKinds } from "@/data/mock";
+import { documentKinds } from "@/data/hotel";
 import { hotelDate } from "@/services/experience";
 import { Icon } from "@/components/ui/icon";
 import { BookingPicker, EmptyExperience, ExperienceHeading, Status, formatMoment } from "@/components/experience/shared";

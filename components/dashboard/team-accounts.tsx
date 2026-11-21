@@ -2,7 +2,6 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useAccounts, useAuth } from "@/hooks/use-auth";
-import { apiConfigured } from "@/services/api-client";
 import { refreshBackendTeam } from "@/services/backend-auth";
 import { provisionTeamAccount, updateTeamAccess } from "@/services/auth";
 import { roleLabels, type Account, type TeamRole } from "@/types/auth";
@@ -37,7 +36,7 @@ function ProvisionForm() {
     <div><span className="eyebrow">Account provisioning</span><h2>Create team account</h2><p className="muted">Create access for a staff member or manager.</p></div>
     <form className="auth-form-stack" onSubmit={submit} aria-busy={busy}>
       <label className="auth-field"><span>Full name</span><input name="name" minLength={2} maxLength={100} required /></label>
-      <label className="auth-field"><span>{apiConfigured() ? "Email address" : "Sample email address"}</span><input name="email" type="email" maxLength={254} required /></label>
+      <label className="auth-field"><span>Email address</span><input name="email" type="email" maxLength={254} required /></label>
       <label className="auth-field"><span>Role</span><select name="role"><option value="staff">Staff</option><option value="manager">Manager</option></select></label>
       <PasswordField label="Password" autoComplete="new-password" minLength={8} />
       {error && <p className="auth-error" role="alert">{error}</p>}
@@ -110,10 +109,10 @@ function TeamDirectory({ accounts }: { accounts: Account[] }) {
 export function TeamAccounts() {
   const session = useAuth();
   const accounts = useAccounts().filter(account => account.role === "staff" || account.role === "manager");
-  const [loading, setLoading] = useState(apiConfigured());
+  const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   useEffect(() => {
-    if (!apiConfigured() || session?.role !== "admin") return;
+    if (session?.role !== "admin") return;
     let current = true;
     void refreshBackendTeam().catch(error => {
       if (current) setLoadError(error instanceof Error ? error.message : "Unable to load team accounts.");

@@ -10,7 +10,6 @@ import { Brand } from "@/components/layout/site-shell";
 import { Icon } from "@/components/ui/icon";
 import { useAuth } from "@/hooks/use-auth";
 import { signOut } from "@/services/auth";
-import { apiConfigured } from "@/services/api-client";
 import { ProfileEditor } from "@/components/auth/profile-editor";
 import { roleLabels, roleRoutes } from "@/types/auth";
 
@@ -30,11 +29,10 @@ export function DashboardShell({ children }: { children: ReactNode }) {
     </div></header>
     <main className={`shell dashboard-page${pathname === roleRoutes[account.role] ? "" : " dashboard-subpage"}`} id="dashboard-content">
       <Link href="/" className="text-link"><Icon name="back" /> Hotel homepage</Link>
-      <div className="dashboard-welcome"><div><span className="eyebrow">{roleLabels[account.role]} workspace</span><h1>Welcome, {account.name.split(" ")[0]}.</h1><p>{account.email}</p>{apiConfigured() && <ProfileEditor />}</div><div className="dashboard-avatar" aria-hidden="true">{account.name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase()}</div></div>
+      <div className="dashboard-welcome"><div><span className="eyebrow">{roleLabels[account.role]} workspace</span><h1>Welcome, {account.name.split(" ")[0]}.</h1><p>{account.email}</p><ProfileEditor /></div><div className="dashboard-avatar" aria-hidden="true">{account.name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase()}</div></div>
       {account.role === "guest" && <GuestNavigation />}
       {account.role === "staff" && <StaffNavigation />}
       {account.role === "manager" && <ManagerNavigation />}
-      {!apiConfigured() && pathname === roleRoutes[account.role] && <aside className="dashboard-explanation"><Icon name="info" width={17} height={17} /><p>This is a demo demonstration</p></aside>}
       {children}
     </main>
   </>;
