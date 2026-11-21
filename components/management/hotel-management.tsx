@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent, type ChangeEvent } from 'react';
 import Image from '@/components/ui/hotel-image';
-import { roomImages } from '@/data/mock';
+import { roomImages } from '@/data/hotel';
 import { useHotelProfile } from '@/hooks/use-management';
 import { saveBackendHotel, uploadRoomPhoto } from '@/services/backend-rooms';
 
