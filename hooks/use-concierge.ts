@@ -2,7 +2,6 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { apiConfigured } from "@/services/api-client";
 import {
   conciergeServerSnapshot, conciergeSnapshot, refreshLiveConcierge,
   resetLiveConcierge, subscribeLiveConcierge,
@@ -16,7 +15,6 @@ export function useLiveConcierge(selectedGuest = "") {
   const role = account?.role;
   const loggedOut = account === null;
   useEffect(() => {
-    if (!apiConfigured()) return;
     if (id && (role === "guest" || role === "staff")) {
       void refreshLiveConcierge({ id, role }, selectedGuest).catch(() => {});
     } else if (loggedOut || role === "manager" || role === "admin") {

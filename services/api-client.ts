@@ -12,10 +12,6 @@ export class ApiError extends Error {
   }
 }
 
-export function apiConfigured() {
-  return true;
-}
-
 function apiBaseUrl(override?: string) {
   const address = (override ?? process.env.NEXT_PUBLIC_API_URL ?? "https://guestly-api-zxgm.onrender.com").trim();
   if (!address) throw new ApiError("The backend API URL has not been configured.");

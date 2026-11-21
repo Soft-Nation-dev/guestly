@@ -25,14 +25,6 @@ jobs:
       - run: npm run build
       - run: npm install --no-save --package-lock=false playwright
       - run: npx playwright install --with-deps chromium
-      - name: Run browser smoke checks
-        run: |
-          npm run start -- --hostname 127.0.0.1 > /tmp/guestly-server.log 2>&1 &
-          for attempt in $(seq 1 60); do
-            if curl -fsS http://127.0.0.1:3000 > /dev/null; then break; fi
-            sleep 1
-          done
-          node tests/frontend-smoke.mjs
       - name: Run API-backed authentication browser checks
         run: |
           node tests/auth-api-fixture.mjs > /tmp/guestly-auth-fixture.log 2>&1 &

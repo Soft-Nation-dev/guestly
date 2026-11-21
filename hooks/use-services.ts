@@ -2,7 +2,6 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { apiConfigured } from "@/services/api-client";
 import {
   catalogueSnapshot, catalogueServerSnapshot, requestsSnapshot, requestsServerSnapshot,
   refreshLiveRequests, refreshServiceCatalogue, resetLiveRequests, subscribeLiveServices,
@@ -13,9 +12,10 @@ import type { ServiceCategory } from "@/types/management";
 export function useLiveCatalogue() {
   const account = useAuth();
   const role = account?.role;
+  const initialized = account !== undefined;
   useEffect(() => {
-    if (apiConfigured() && account !== undefined) void refreshServiceCatalogue(role || null).catch(() => {});
-  }, [account === undefined, role]);
+    if (initialized) void refreshServiceCatalogue(role || null).catch(() => {});
+  }, [initialized, role]);
   const snapshot = useSyncExternalStore(subscribeLiveServices, catalogueSnapshot, catalogueServerSnapshot);
   return JSON.parse(snapshot) as { services: ServiceCategory[]; loaded: boolean; loading: boolean; error: string };
 }
@@ -26,7 +26,6 @@ export function useLiveRequests() {
   const role = account?.role;
   const loggedOut = account === null;
   useEffect(() => {
-    if (!apiConfigured()) return;
     if (id && role && ["guest", "staff", "manager"].includes(role)) {
       void refreshLiveRequests({ id, role }).catch(() => {});
     } else if (loggedOut || role === "admin") {
