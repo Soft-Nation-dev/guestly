@@ -109,8 +109,8 @@ button:disabled { opacity:.58; }
   .message:last-of-type { animation:gs-fade 160ms var(--ease-out) both; }
   .dataset-track span { transform-origin:left; animation:gs-bar-x 480ms var(--ease-out) both; }
   .revenue-track>div { transform-origin:bottom; animation:gs-bar-y 480ms var(--ease-out) both; }
-  .button,.demo-role,.filter-tabs button,.filter-tabs a,.staff-navigation a,.mobile-nav a,.password-input button,.conversation-list a { transition:background-color 160ms var(--ease-out),color 160ms var(--ease-out),border-color 160ms var(--ease-out),box-shadow 180ms var(--ease-out),transform 130ms var(--ease-out); }
-  .button:not(:disabled):active,.demo-role:not(:disabled):active,.filter-tabs button:active,.staff-navigation a:active,.mobile-nav a:active { transform:scale(.98); }
+  .button,.filter-tabs button,.filter-tabs a,.staff-navigation a,.mobile-nav a,.password-input button,.conversation-list a { transition:background-color 160ms var(--ease-out),color 160ms var(--ease-out),border-color 160ms var(--ease-out),box-shadow 180ms var(--ease-out),transform 130ms var(--ease-out); }
+  .button:not(:disabled):active,.filter-tabs button:active,.staff-navigation a:active,.mobile-nav a:active { transform:scale(.98); }
   .text-link svg,.button svg { transition:transform 180ms var(--ease-out); }
   .auth-field input,.auth-field select,.auth-field textarea,.stay-search input,.stay-search select,.sort-field select { transition:border-color 160ms var(--ease-out),box-shadow 160ms var(--ease-out); }
   .room-card,.facility-card,.workspace-card,.experience-card,a.staff-metric { transition:border-color 200ms var(--ease-out),box-shadow 230ms var(--ease-out); }

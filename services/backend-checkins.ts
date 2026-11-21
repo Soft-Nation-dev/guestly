@@ -1,4 +1,3 @@
-import { apiConfigured } from "@/services/api-client";
 import { authorizedRequest, authorizedDownload } from "@/services/backend-auth";
 import type { Account } from "@/types/auth";
 import type { CheckIn, DocumentKind } from "@/types/experience";
@@ -56,7 +55,7 @@ export function resetBackendCheckIns() {
 }
 
 export async function refreshBackendCheckIns(account: Pick<Account, "id" | "role">, force = false) {
-  if (!apiConfigured() || !["guest", "staff"].includes(account.role)) return;
+  if (!["guest", "staff"].includes(account.role)) return;
   const key = account.role + ":" + account.id;
   if (identity !== key) {
     revision++;

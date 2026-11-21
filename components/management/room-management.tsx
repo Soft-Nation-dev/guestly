@@ -2,8 +2,7 @@
 
 import Image from "@/components/ui/hotel-image";
 import { useState, type FormEvent, type ChangeEvent } from "react";
-import { roomImages } from "@/data/mock";
-import { apiConfigured } from "@/services/api-client";
+import { roomImages } from "@/data/hotel";
 import { uploadRoomPhoto } from "@/services/backend-rooms";
 import { useRoomCatalogue } from "@/hooks/use-management";
 import { HotelManagement } from "@/components/management/hotel-management";
@@ -23,8 +22,8 @@ function RoomEditor({ room, onClose }: { room?: Room; onClose: () => void }) {
     const file = event.target.files?.[0];
     if (!file) return;
     setError("");
-    const maxSize = apiConfigured() ? 2 * 1024 * 1024 : 320000;
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > maxSize) { setError(apiConfigured() ? "Choose a JPEG, PNG or WebP image under 2 MB." : "Choose a JPEG, PNG or WebP image under 320 KB."); return; }
+    const maxSize = 2 * 1024 * 1024;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > maxSize) { setError("Choose a JPEG, PNG or WebP image under 2 MB."); return; }
     setFile(file);
     setReading(true);
     const reader = new FileReader();
@@ -39,7 +38,7 @@ function RoomEditor({ room, onClose }: { room?: Room; onClose: () => void }) {
     const data = new FormData(event.currentTarget);
     const value = (key: string) => String(data.get(key) ?? "");
     try {
-      const storedImage = apiConfigured() && file ? (await uploadRoomPhoto(file)).url : image;
+      const storedImage = file ? (await uploadRoomPhoto(file)).url : image;
       await saveRoom({ name: value("name"), category: value("category") as RoomCategory, image: storedImage, nightlyRate: Number(value("nightlyRate")), capacity: Number(value("capacity")), size: Number(value("size")), bed: value("bed"), view: value("view"), amenities: value("amenities").split(",").map(item => item.trim()).filter(Boolean), description: value("description"), inventory: Number(value("inventory")), featured: data.has("featured") }, room?.id);
       onClose();
     } catch (error) { setError(error instanceof Error ? error.message : "Unable to save room."); }
@@ -59,7 +58,7 @@ function RoomEditor({ room, onClose }: { room?: Room; onClose: () => void }) {
     </div>
     <label className="auth-field"><span>Amenities (comma separated)</span><input name="amenities" defaultValue={room?.amenities.join(", ")} /></label>
     <label className="auth-field"><span>Description</span><textarea name="description" required rows={3} defaultValue={room?.description} /></label>
-    <div className="management-form-grid"><div className="management-image"><Image src={image} alt="Room photo preview" fill sizes="280px" unoptimized={image.startsWith("data:")} /></div><div className="experience-form"><label className="auth-field"><span>Original hotel image</span><select value={roomImages.includes(image) ? image : ""} onChange={event => { if(event.target.value) { setImage(event.target.value); setFile(null); } }}><option value="" disabled>Uploaded photo</option>{roomImages.map(path => <option key={path} value={path}>{path.split("/").pop()?.replace(".jpg", "").replaceAll("-", " ")}</option>)}</select></label><label className="auth-field"><span>{apiConfigured() ? "Upload photo (max 2 MB)" : "Upload photo (max 320 KB)"}</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} /></label></div></div>
+    <div className="management-form-grid"><div className="management-image"><Image src={image} alt="Room photo preview" fill sizes="280px" unoptimized={image.startsWith("data:")} /></div><div className="experience-form"><label className="auth-field"><span>Original hotel image</span><select value={roomImages.includes(image) ? image : ""} onChange={event => { if(event.target.value) { setImage(event.target.value); setFile(null); } }}><option value="" disabled>Uploaded photo</option>{roomImages.map(path => <option key={path} value={path}>{path.split("/").pop()?.replace(".jpg", "").replaceAll("-", " ")}</option>)}</select></label><label className="auth-field"><span>Upload photo (max 2 MB)</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} /></label></div></div>
     <label className="management-check"><input name="featured" type="checkbox" defaultChecked={room?.featured} /> Feature on homepage</label>
     <p className="muted">Set inventory to zero to stop new bookings, if no confirmed future reservations require the room.</p>
     {error && <p className="auth-error" role="alert">{error}</p>}
@@ -73,9 +72,9 @@ export function RoomManagement() {
   const [editing, setEditing] = useState<string | null>(null);
   return <section className="workspace-section">
     <div className="staff-snapshot-heading"><div><span className="eyebrow">Hotel configuration</span><h2>Room management</h2><p className="muted">Manage room types, prices, photos and inventory.</p></div><button className="button button-primary" onClick={() => setEditing("new")}>Add room type <Icon name="arrow" /></button></div>
-    {apiConfigured() && <HotelManagement />}
-    {apiConfigured() && !catalogue.loaded && !catalogue.error && <p role="status">Loading managed room types…</p>}
-    {apiConfigured() && catalogue.error && <p className="auth-error" role="alert">{catalogue.error}</p>}
+    <HotelManagement />
+    {!catalogue.loaded && !catalogue.error && <p role="status">Loading managed room types…</p>}
+    {catalogue.error && <p className="auth-error" role="alert">{catalogue.error}</p>}
     {editing === "new" && <RoomEditor key="new" onClose={() => setEditing(null)} />}
     <div className="room-grid">{rooms.map(room => <article className="panel management-panel" key={room.id}><div className="management-image"><Image src={room.image} alt={room.name} fill sizes="(max-width:760px) 100vw,33vw" unoptimized={room.image.startsWith("data:")} /></div><div className="booking-card-heading"><h3>{room.name}</h3><span className="role-pill">{room.inventory ? "Listed" : "Unavailable"}</span></div><p className="muted">{room.category} · {room.capacity} guests · {room.inventory} rooms</p><strong className="price">{formatMoney(room.nightlyRate)} <small className="muted">/ night</small></strong><button className="button button-soft" aria-expanded={editing === room.id} onClick={() => setEditing(editing === room.id ? null : room.id)}>Edit room</button>{editing === room.id && <div className="management-inline-editor"><RoomEditor key={room.id} room={room} onClose={() => setEditing(null)} /></div>}</article>)}</div>
   </section>;

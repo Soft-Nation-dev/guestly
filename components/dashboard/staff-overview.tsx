@@ -1,12 +1,10 @@
 "use client";
 
 import Link from "@/components/navigation/app-link";
-import { DatasetStaffSummary } from "@/components/dataset/overview";
 import Image from "@/components/ui/hotel-image";
 import type { ReactNode } from "react";
-import { hotel } from "@/data/mock";
+import { hotel } from "@/data/hotel";
 import { useAccounts } from "@/hooks/use-auth";
-import { apiConfigured } from "@/services/api-client";
 import { useBookingStore } from "@/hooks/use-bookings";
 import { useExperience } from "@/hooks/use-experience";
 import { hotelDate } from "@/services/experience";
@@ -39,7 +37,6 @@ export function StaffOverview() {
   return <div className="staff-overview">
     <div className="staff-snapshot-heading"><div><span className="eyebrow">Front desk operations</span><h2>Operational snapshot</h2></div><span className="staff-date"><Icon name="calendar" />{today} · WAT</span></div>
     <div className="staff-metrics">{metrics.map(item => <Link href={item.href} className="panel staff-metric" key={item.label}><div><span>{item.label}</span><Icon name={item.icon} /></div><strong>{item.count}</strong><small>{item.hint}</small></Link>)}</div>
-    {!apiConfigured() && <DatasetStaffSummary />}
     <div className="staff-operations-grid">
       <Section title="Pre-arrival approvals" icon="key" href="/staff/check-ins?view=pending" action="Review queue">
         {snapshot.pending.length ? snapshot.pending.slice(0, 4).map(item => { const booking = bookings.find(value => value.id === item.bookingId); const name = booking?.guestName ?? nameFor(item.guestId); return <article className="staff-approval" key={item.bookingId}><div className="staff-person"><Initials name={name} /><div><strong>{name}</strong><small>{booking?.roomName} · {booking?.checkIn} · {item.arrivalTime} WAT</small></div><Status status={item.status} /></div><p className="staff-review-info"><Icon name="shield" />{item.documentKind} · Document submitted</p><Link className="button button-primary" href={`/staff/check-ins?booking=${encodeURIComponent(item.bookingId)}`}>Review submission <Icon name="arrow" /></Link></article>; }) : <p className="staff-empty">No check-ins awaiting approval.</p>}

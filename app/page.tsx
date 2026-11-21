@@ -5,7 +5,7 @@ import { FeaturedRooms } from "@/components/public/featured-rooms";
 import { StaySearch } from "@/components/public/stay-search";
 import { Icon } from "@/components/ui/icon";
 import { HotelHero } from "@/components/public/hotel-hero";
-import { hotel } from "@/data/mock";
+import { hotel } from "@/data/hotel";
 
 export default function Home() {
   return <SiteShell>

@@ -6,7 +6,6 @@ import { RecordedServices } from "@/components/dataset/recorded-services";
 import { useManagement } from "@/hooks/use-management";
 import { useExperience } from "@/hooks/use-experience";
 import { saveService } from "@/services/management";
-import { apiConfigured } from "@/services/api-client";
 import { useLiveCatalogue } from "@/hooks/use-services";
 import { serviceMetrics } from "@/lib/management";
 import { Icon } from "@/components/ui/icon";
@@ -32,7 +31,6 @@ function ServiceEditor({ service, close }: { service?: ServiceCategory; close: (
 export function ServiceManagement() {
   const { services } = useManagement();
   const catalogue = useLiveCatalogue();
-  const live = apiConfigured();
   const { requests } = useExperience();
   const metrics = serviceMetrics(requests);
   const [editing, setEditing] = useState<string | null>(null);
@@ -40,8 +38,8 @@ export function ServiceManagement() {
   return <section className="workspace-section">
     <div><span className="eyebrow">Hotel performance</span><h2>Services &amp; performance</h2><p className="muted">Monitor service delivery and manage the request catalogue.</p></div>
     <DatasetServiceStats />
-    {live && catalogue.loading && <p role="status">Loading service catalogue…</p>}
-    {live && catalogue.error && <p role="alert" className="auth-error">{catalogue.error}</p>}
+    {catalogue.loading && <p role="status">Loading service catalogue…</p>}
+    {catalogue.error && <p role="alert" className="auth-error">{catalogue.error}</p>}
     <div className="staff-metrics">{[{ title: "Total requests", value: metrics.total }, { title: "Completed", value: metrics.done }, { title: "Completion rate", value: metrics.completion === null ? "—" : `${metrics.completion}%` }, { title: "Avg. completion time", value: metrics.averageMinutes === null ? "—" : `${metrics.averageMinutes}m` }].map(item => <div className="panel staff-metric" key={item.title}><div>{item.title}</div><strong>{item.value}</strong></div>)}</div>
     <section className="panel management-panel"><h3>Performance by service</h3>{categories.map(name => { const stats = serviceMetrics(requests.filter(item => item.category === name)); return <div className="management-stat" key={name}><div><strong>{name}</strong><p className="muted">{stats.received} received · {stats.inProgress} in progress</p></div><span>{stats.done}/{stats.total} done</span></div>; })}</section>
     <div className="staff-snapshot-heading"><h2>Service catalogue</h2><button className="button button-primary" onClick={() => setEditing("new")}>Add service <Icon name="arrow" /></button></div>

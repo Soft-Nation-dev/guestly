@@ -2,7 +2,6 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { apiConfigured } from "@/services/api-client";
 import {
   subscribeManagerReport, managerReportSnapshot, managerReportServerSnapshot,
   refreshManagerReport, resetManagerReport, type ManagementReport,
@@ -14,7 +13,6 @@ export function useManagerReport() {
   const role = account?.role;
   const loggedOut = account === null;
   useEffect(() => {
-    if (!apiConfigured()) return;
     if (id && role === "manager") {
       void refreshManagerReport(id).catch(() => {});
     } else if (loggedOut || role !== undefined && role !== "manager") {

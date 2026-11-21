@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/ui/icon";
 import { useAuth } from "@/hooks/use-auth";
-import { apiConfigured } from "@/services/api-client";
 import { refreshBackendBookings, verifyBackendPayment, type PaymentVerification } from "@/services/backend-bookings";
 import { formatMoney } from "@/lib/format";
 
@@ -22,7 +21,7 @@ export function PaymentReturn() {
   const validReference = /^[a-zA-Z0-9_-]{5,100}$/.test(reference);
 
   useEffect(() => {
-    if (!apiConfigured() || accountRole !== "guest" || !accountId || !validReference) return;
+    if (accountRole !== "guest" || !accountId || !validReference) return;
     const controller = new AbortController();
     void verifyBackendPayment(reference).then(value => {
       if (controller.signal.aborted) return;
@@ -39,7 +38,6 @@ export function PaymentReturn() {
     return () => controller.abort();
   }, [accountId, accountRole, reference, validReference, attempt]);
 
-  if (!apiConfigured()) return <div className="panel empty-state"><Icon name="info" /><h1>Payment unavailable in preview mode</h1><Link href="/rooms" className="button button-primary">Explore rooms</Link></div>;
   if (!validReference) return <div className="panel empty-state"><Icon name="shield" /><h1>Payment reference missing</h1><p>No reservation has been confirmed on this page.</p><Link href="/guest/bookings" className="button button-primary">My bookings</Link></div>;
   if (account === undefined) return <div className="panel empty-state"><Icon name="shield" /><p role="status">Loading your account…</p></div>;
   if (!account || account.role !== "guest") {

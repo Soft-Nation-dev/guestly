@@ -2,7 +2,7 @@ import Link from "@/components/navigation/app-link";
 import { AccountLink } from "@/components/auth/account-link";
 import type { ReactNode } from "react";
 import { Icon } from "@/components/ui/icon";
-import { hotel } from "@/data/mock";
+import { hotel } from "@/data/hotel";
 
 export function Brand() {
   return <Link className="brand" resetScroll href="/" aria-label="Guestly home">

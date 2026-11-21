@@ -2,7 +2,6 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { apiConfigured } from "@/services/api-client";
 import {
   liveLoyaltySnapshot, liveLoyaltyServerSnapshot, subscribeLiveLoyalty,
   refreshLiveLoyalty, resetLiveLoyalty, type LoyaltySummary,
@@ -15,7 +14,6 @@ export function useLiveLoyalty() {
   const role = account?.role;
   const loggedOut = account === null;
   useEffect(() => {
-    if (!apiConfigured()) return;
     if (id && (role === "guest" || role === "manager")) {
       void refreshLiveLoyalty({ id, role }).catch(() => {});
     } else if (loggedOut || role !== undefined && role !== "guest" && role !== "manager") {

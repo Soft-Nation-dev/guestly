@@ -1,6 +1,5 @@
 import http from 'node:http';
 import { randomUUID } from 'node:crypto';
-import { readFileSync } from 'node:fs';
 
 const users = new Map();
 const sessions = new Map();
@@ -22,9 +21,7 @@ const serviceCatalogue = [
 ].map(([name,description],index) => ({ id: '507f1f77bcf86cd7994390' + String(index + 10), name, description, active: true }));
 const checkins = [];
 const historicalFiles = ['bookings', 'guests', 'payments', 'service-requests'];
-const historicalData = Object.fromEntries(historicalFiles.map(source => [
-  source, JSON.parse(readFileSync(new URL('../data/hotel-dataset/' + source + '.json', import.meta.url), 'utf8')),
-]));
+const historicalData = Object.fromEntries(historicalFiles.map(source => [source, []]));
 const loyaltyRules = [{ pointsPerNight: 10, effectiveAt: '1970-01-01T00:00:00.000Z' }];
 const loyaltyAwards = [];
 let simulatedNow = null;
@@ -85,7 +82,7 @@ function historicalReport() {
   });
   const dates = b.map(entry => entry.Booking_Date).sort();
   return {
-    imported: true, source: 'historical-data-analyst',
+    imported: false, source: 'historical-data-analyst',
     counts: { bookings: b.length, guests: g.length, payments: p.length, requests: r.length },
     distinctGuestIds: profiles.size,
     conflictingGuestIds: [...profiles.values()].filter(values => values.size > 1).length,

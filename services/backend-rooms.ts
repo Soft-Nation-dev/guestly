@@ -1,6 +1,6 @@
-import { apiRequest, apiConfigured } from '@/services/api-client';
+import { apiRequest } from '@/services/api-client';
 import { authorizedRequest } from '@/services/backend-auth';
-import { hotel as hotelDefaults } from '@/data/mock';
+import { hotel as hotelDefaults } from '@/data/hotel';
 import type { Room, StaySearch } from '@/types/hotel';
 
 export type LiveRoom = Room & { availableInventory: number };
@@ -49,7 +49,6 @@ export function hotelServerSnapshot() {
 }
 
 export async function refreshRooms(force = false) {
-  if (!apiConfigured()) return;
   if (roomPromise) return roomPromise;
   if (catalogue.loaded && !force) return;
   catalogue = { ...catalogue, loading: true, error: '' };
@@ -69,7 +68,6 @@ export async function refreshRooms(force = false) {
 }
 
 export async function refreshHotel(force = false) {
-  if (!apiConfigured()) return;
   if (hotelPromise) return hotelPromise;
   if (!force && hotel !== defaultHotel) return;
   hotelPromise = apiRequest<HotelProfile>('/api/v1/hotels/current')
