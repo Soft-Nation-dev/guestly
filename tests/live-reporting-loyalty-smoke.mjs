@@ -73,11 +73,12 @@ try {
   const reporting = await apiCall('/api/v1/reports/overview');
   assert.equal(reporting.status, 200);
   assert.deepEqual(reporting.data.historical.counts, {
-    bookings: 500, guests: 431, payments: 500, requests: 500,
+    bookings: 0, guests: 0, payments: 0, requests: 0,
   });
-  assert.equal(reporting.data.historical.distinctGuestIds, 171);
-  assert.equal(reporting.data.historical.conflictingGuestIds, 135);
-  assert.equal(reporting.data.historical.successfulPayments, 379);
+  assert.equal(reporting.data.historical.imported, false);
+  assert.equal(reporting.data.historical.distinctGuestIds, 0);
+  assert.equal(reporting.data.historical.conflictingGuestIds, 0);
+  assert.equal(reporting.data.historical.successfulPayments, 0);
   assert.equal(reporting.data.historical.verifiedGatewayPayments, 0);
   assert.equal(reporting.data.historical.eligibleLoyaltyAwards, 0);
   assert.equal(reporting.data.live.source, 'live-verified');
@@ -85,27 +86,27 @@ try {
   assert.ok(reporting.data.live.verifiedRevenueKobo > 0);
   const sourceRows = await apiCall('/api/v1/reports/historical/guests?limit=100');
   assert.equal(sourceRows.status, 200);
-  assert.equal(sourceRows.data.total, 431);
+  assert.equal(sourceRows.data.total, 0);
   const sourceIds = sourceRows.data.items.map(item => item.sourceId);
-  assert.ok(sourceIds.length === 100);
+  assert.equal(sourceIds.length, 0);
   const bookings = await apiCall('/api/v1/reports/historical/bookings?q=B0001&limit=10');
   assert.equal(bookings.status, 200);
-  assert.equal(bookings.data.total, 1);
-  assert.equal(bookings.data.items[0].Booking_ID, 'B0001');
+  assert.equal(bookings.data.total, 0);
+  assert.deepEqual(bookings.data.items, []);
   const payments = await apiCall('/api/v1/reports/historical/payments?status=Refunded&limit=10');
   assert.equal(payments.status, 200);
-  assert.equal(payments.data.total, 37);
+  assert.equal(payments.data.total, 0);
 
   await visit('/manager');
   await page.getByRole('heading', { name: 'Historical Data Analyst records' }).waitFor();
-  await page.getByText('135 guest IDs have conflicting historical profiles', { exact: false }).waitFor();
+  await page.getByRole('heading', { name: 'Historical import pending' }).waitFor();
   await page.getByText('Verified Paystack revenue').first().waitFor();
   await visit('/manager/bookings');
   await page.getByRole('heading', { name: 'Imported booking records' }).waitFor();
-  await page.getByText('B0001 · Source row 1').waitFor();
+  await page.getByText('No matching historical records', { exact: false }).waitFor();
   await visit('/manager/services');
   await page.getByRole('heading', { name: 'Imported service records' }).waitFor();
-  await page.getByText('SR0001 · Source row 1').waitFor();
+  await page.getByText('No matching historical records', { exact: false }).waitFor();
 
   await visit('/manager/loyalty');
   await page.getByRole('heading', { name: 'Loyalty management' }).waitFor();
